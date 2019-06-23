@@ -20,7 +20,8 @@ preferences {
 	input("username", "string", title:"Username", description: "Please enter your Alarm.com username", required: true, displayDuringSetup: true)
 	input("password", "password", title:"Password", description: "Please enter your Alarm.com password", required: true, displayDuringSetup: true)
 	input("disarm", "bool", title:"Add Disarm Switch as well", description: "Disarm button is only added if this is set to on", required: false, displayDuringSetup: true, defaultValue: false )
-
+	input(name: "polling", title: "Server Polling in Minutes (put 0 to turn off polling)", type: "int", description: "in minutes", defaultValue: "5" )
+			
 }
 
 /////////////////////////////////////
@@ -54,6 +55,38 @@ def initialize() {
 
 def getHubId() {
 	return state.hubId ? state.hubId : location.hubs[0].id
+}
+
+// Refresh data
+def refresh() {
+	log.info "Refreshing data..."
+	// set polling states
+	state.polling["last"] = now()
+		
+	// update data for child devices
+	runCommand('STATUS', false, false, false)
+    
+	//schedule the rescheduler to schedule refresh ;)
+	if ((state.polling["rescheduler"]?:0) + 2400000 < now()) {
+		log.info "Scheduling Auto Rescheduler.."
+		runEvery30Minutes(runRefresh)
+		state.polling["rescheduler"] = now()
+	}
+}
+
+def runRefresh(evt) {
+	log.info "Last refresh was "  + ((now() - (state.polling["last"]?:0))/60000) + " minutes ago"
+	// Reschedule if  didn't update for more than 5 minutes plus specified polling
+	if ((((state.polling["last"]?:0) + (((settings.polling.toInteger() > 0 )? settings.polling.toInteger() : 1) * 60000) + 300000) < now()) && canSchedule()) {
+		log.info "Scheduling Auto Refresh.."
+		schedule("* */" + ((settings.polling.toInteger() > 0 )? settings.polling.toInteger() : 1) + " * * * ?", refresh)
+	}
+    
+	// Force Refresh NOWWW!!!!
+	refresh()
+    
+	//Update rescheduler's last run
+	if (!evt) state.polling["rescheduler"] = now()
 }
 
 /////////////////////////////////////
