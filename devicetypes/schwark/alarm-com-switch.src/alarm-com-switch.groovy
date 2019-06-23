@@ -52,6 +52,7 @@ preferences {
 }
 
 def updated() {
+	unsubscribe()
 }
 
 def runCommand() {
