@@ -63,6 +63,7 @@ def getHubId() {
 // Refresh data
 def refresh() {
 	log.info "Refreshing data..."
+	log.info "Last refresh was "  + ((now() - (state.polling["last"]?:0))/60000) + " minutes ago"
 	// set polling states
 	state.polling["last"] = now()
 		
@@ -185,7 +186,7 @@ private def updateStatus(command, status, browserSession=null) {
 	def on = null
 	def id = ['0': 'UNKNOWN', '1': 'DISARM', '2': 'ARMSTAY', '3': 'ARMAWAY']
 	if('STATUS' == command && status) {
-		on = id[status] 
+		on = id["${status}"] 
 	} else {
 		on = command
 	}
