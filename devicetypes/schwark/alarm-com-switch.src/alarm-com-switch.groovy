@@ -52,7 +52,7 @@ preferences {
 }
 
 def updated() {
-	unsubscribe()
+	unschedule()
 }
 
 def runCommand() {
