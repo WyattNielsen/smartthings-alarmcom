@@ -65,7 +65,7 @@ def push() {
 
 def refresh() {
 	log.debug("running device refresh for Alarm.com switch")
-	parent.runCommand('STATUS', false, false, false)
+	parent.refresh()
 }
 
 def poll() {
