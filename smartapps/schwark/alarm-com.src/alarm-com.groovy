@@ -46,6 +46,9 @@ def updated() {
 
 /////////////////////////////////////
 def initialize() {
+	// Set initial polling state
+	state.polling = [ last: 0, rescheduler: now() ]
+	
 	// remove location subscription aftwards
 	unsubscribe()
 	state.subscribe = false
@@ -524,6 +527,7 @@ def createSwitches() {
 			}
 		}
 	}
+	runRefresh()
 }
 
 private Integer convertHexToInt(hex) {
